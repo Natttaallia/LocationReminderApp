@@ -11,6 +11,14 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingRequest
+import android.app.PendingIntent
+import android.content.Intent
+import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
+import com.google.android.gms.location.LocationServices
+import android.util.Log
 
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
@@ -42,14 +50,48 @@ class SaveReminderFragment : BaseFragment() {
 
         binding.saveReminder.setOnClickListener {
             val title = _viewModel.reminderTitle.value
-            val description = _viewModel.reminderDescription
+            val description = _viewModel.reminderDescription.value
             val location = _viewModel.reminderSelectedLocationStr.value
-            val latitude = _viewModel.latitude
+            val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-//            TODO: use the user entered reminder details to:
-//             1) add a geofencing request
-//             2) save the reminder to the local db
+            val data = ReminderDataItem(title, description, location, latitude, longitude)
+            if (_viewModel.validateAndSaveReminder(data)) {
+                addGeofenceData(data)
+            }
+        }
+    }
+
+    private fun addGeofenceData(data: ReminderDataItem) {
+        val request = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(
+                Geofence.Builder()
+                    .setRequestId(data.id)
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .setCircularRegion(
+                        data.latitude ?: 0.0,
+                        data.longitude ?: 0.0,
+                        400f)
+                    .build()
+            )
+            .build()
+
+        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+        intent.action = GeofenceBroadcastReceiver.ACTION_GEOFENCE_EVENT
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val client = LocationServices.getGeofencingClient(requireContext())
+        client.addGeofences(request, pendingIntent)?.run {
+            addOnFailureListener {
+                Log.e("Error", it?.message ?: "")
+            }
         }
     }
 
