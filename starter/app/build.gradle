@@ -106,6 +106,7 @@ dependencies {
     testImplementation "androidx.test:rules:$androidXTestRulesVersion"
 
     // AndroidX Test - Instrumented testing
+    androidTestImplementation "com.google.truth:truth:$truthVersion"
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
     androidTestImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"

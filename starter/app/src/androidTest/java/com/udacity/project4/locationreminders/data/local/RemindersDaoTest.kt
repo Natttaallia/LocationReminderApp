@@ -15,7 +15,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.notNullValue
-import org.hamcrest.MatcherAssert.assertThat
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Test
 
@@ -25,6 +25,50 @@ import org.junit.Test
 @SmallTest
 class RemindersDaoTest {
 
-//    TODO: Add testing implementation to the RemindersDao.kt
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
+
+    private lateinit var database: RemindersDatabase
+
+    @Before
+    fun initDB() {
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        ).build()
+    }
+
+    @After
+    fun closeDB() = database.close()
+
+    private val data = ReminderDTO(
+        "Reminder Test",
+        "Reminder description",
+        "Test location",
+        0.0,
+        0.0)
+
+    @Test
+    fun insertIntoDB() = runBlockingTest {
+        database.reminderDao().saveReminder(data)
+        assertThat(database.reminderDao().getReminders().contains(data)).isTrue()
+    }
+
+    @Test
+    fun deleteFromDB() = runBlockingTest {
+        database.reminderDao().saveReminder(data)
+        database.reminderDao().deleteAllReminders()
+        assertThat(database.reminderDao().getReminders()).isEmpty()
+    }
+
+    @Test
+    fun getFromDB() = runBlockingTest {
+        database.reminderDao().saveReminder(data)
+
+        val reminder = database.reminderDao().getReminderById(data.id)
+
+        assertThat(reminder).isNotNull()
+        assertThat(reminder?.title).isEqualTo(data.title)
+    }
 
 }
