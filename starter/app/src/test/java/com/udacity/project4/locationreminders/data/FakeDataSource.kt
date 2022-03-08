@@ -28,7 +28,7 @@ class FakeDataSource(var data: MutableList<ReminderDTO> = mutableListOf()) : Rem
         if (shouldReturnError) {
             return Result.Error("Data not found", 404)
         } else {
-            val reminder = reminders.find { it.id == id }
+            val reminder = data.find { it.id == id }
             if (reminder != null) {
                 return Result.Success(reminder)
             } else {
