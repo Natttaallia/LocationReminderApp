@@ -86,8 +86,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map.setMyLocationEnabled(true)
         }
         else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
+            requestPermissions(
                 arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
                 1
             )
