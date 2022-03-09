@@ -30,6 +30,9 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import android.widget.Toast
+import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.LatLng
 
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
@@ -77,6 +80,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         enableLocation()
         setOnPoiClickListener(map)
+        setOnMapLongClickListener(map)
 
         onLocationSelected()
     }
@@ -114,6 +118,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     private fun setOnPoiClickListener(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
+            map.clear()
             this.poi = poi
             val poiMarker = map.addMarker(
                 MarkerOptions()
@@ -122,6 +127,19 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             )
             poiMarker.showInfoWindow()
         }
+    }
+
+    private fun setOnMapLongClickListener(map: GoogleMap) {
+        map.setOnMapLongClickListener(OnMapLongClickListener { latLng ->
+            map.clear()
+            this.poi = PointOfInterest(latLng, null, getString(R.string.dropped_pin))
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(getString(R.string.dropped_pin))
+            )
+            marker.showInfoWindow()
+        })
     }
 
     private fun onLocationSelected() {
