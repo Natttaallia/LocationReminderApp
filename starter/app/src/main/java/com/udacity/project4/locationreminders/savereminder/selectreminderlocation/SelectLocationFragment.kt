@@ -65,6 +65,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         //Default location
         val zoomLevel = 15f
         val home = LatLng(47.12636687259162, 37.64587284038706)
+        map.setMapStyle(
+            MapStyleOptions.loadRawResourceStyle(
+                requireContext(),
+                R.raw.map_style
+            )
+        )
         map.addMarker(MarkerOptions().position(home).title("Marker in Ukraine"))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(home, zoomLevel))
         map.uiSettings.isZoomControlsEnabled = true
