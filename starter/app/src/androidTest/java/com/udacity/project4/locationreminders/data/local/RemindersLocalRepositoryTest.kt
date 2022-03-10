@@ -76,4 +76,12 @@ class RemindersLocalRepositoryTest {
         assertThat(reminder?.data?.title).isEqualTo(data.title)
     }
 
+    @Test
+    fun getFromDBWithError() = runBlocking {
+        repository.deleteAllReminders()
+        val reminder = repository.getReminder(data.id)
+
+        assertThat(reminder).isEqualTo(Result.Error("Reminder not found!"))
+    }
+
 }
