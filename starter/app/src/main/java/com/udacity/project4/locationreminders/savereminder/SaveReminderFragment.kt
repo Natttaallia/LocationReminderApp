@@ -16,9 +16,13 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import android.Manifest
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.google.android.gms.location.LocationServices
 import android.util.Log
+import android.widget.Toast
 
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
@@ -49,16 +53,51 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
-            val title = _viewModel.reminderTitle.value
-            val description = _viewModel.reminderDescription.value
-            val location = _viewModel.reminderSelectedLocationStr.value
-            val latitude = _viewModel.latitude.value
-            val longitude = _viewModel.longitude.value
-
-            val data = ReminderDataItem(title, description, location, latitude, longitude)
-            if (_viewModel.validateAndSaveReminder(data)) {
-                addGeofenceData(data)
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q
+                || PackageManager.PERMISSION_GRANTED ==
+                        ActivityCompat.checkSelfPermission(
+                            requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        )) {
+                startGeofence()
+            } else {
+                requestPermissions(
+                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                    2
+                )
             }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            2 -> {
+                if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(
+                        context,
+                        getString(R.string.permission_denied_explanation),
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    startGeofence()
+                }
+            }
+        }
+    }
+
+    private fun startGeofence() {
+        val title = _viewModel.reminderTitle.value
+        val description = _viewModel.reminderDescription.value
+        val location = _viewModel.reminderSelectedLocationStr.value
+        val latitude = _viewModel.latitude.value
+        val longitude = _viewModel.longitude.value
+
+        val data = ReminderDataItem(title, description, location, latitude, longitude)
+        if (_viewModel.validateAndSaveReminder(data)) {
+            addGeofenceData(data)
         }
     }
 
