@@ -33,6 +33,7 @@ import java.lang.ClassCastException
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
+import androidx.core.content.ContextCompat
 
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
@@ -77,15 +78,18 @@ class SaveReminderFragment : BaseFragment() {
         }
 
         binding.saveReminder.setOnClickListener {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION) === PackageManager.PERMISSION_GRANTED &&
+                (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q
                 || PackageManager.PERMISSION_GRANTED ==
                         ActivityCompat.checkSelfPermission(
                             requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                        )) {
+                        ))) {
                 startGeofence()
             } else {
                 requestPermissions(
-                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
                     2
                 )
             }
