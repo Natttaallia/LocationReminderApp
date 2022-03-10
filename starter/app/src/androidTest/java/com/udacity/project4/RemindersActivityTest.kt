@@ -26,6 +26,7 @@ import com.udacity.project4.util.DataBindingIdlingResource
 import androidx.test.espresso.IdlingRegistry
 import org.junit.After
 import com.udacity.project4.util.monitorActivity
+import android.app.Activity
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.typeText
@@ -35,6 +36,13 @@ import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.*
 import kotlinx.coroutines.delay
 import org.koin.core.context.GlobalContext
+import androidx.test.espresso.matcher.RootMatchers
+import androidx.test.espresso.matcher.ViewMatchers
+import org.hamcrest.Matchers
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.not
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -119,7 +127,6 @@ class RemindersActivityTest :
     fun addReminderLocationData() {
         val scenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(scenario)
-
         onView(withId(R.id.noDataTextView)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
         onView(withId(R.id.addReminderFAB)).perform(click())
         onView(withId(R.id.reminderTitle)).perform(typeText("Test Title"))
@@ -133,6 +140,11 @@ class RemindersActivityTest :
 
         onView(withText("Test Title")).check(matches(isDisplayed()))
         onView(withText("Test Description")).check(matches(isDisplayed()))
+
+        onView(withText("Reminder Saved !")).inRoot(withDecorView(not(
+            `is`(
+                dataBindingIdlingResource.activity.getWindow().getDecorView()
+            )))).check(matches(isDisplayed()))
     }
 
 }
